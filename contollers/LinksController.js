@@ -84,7 +84,7 @@ const LinksController = {
     
             res.status(201).json({
                 message: 'Link created successfully',
-                shortUrl: `http://localhost:8787/links/${newLink._id}`
+                shortUrl: `http://localhost:8787/links/${newLink._id}?t=VALUE`
             });
         } catch (err) {
             res.status(500).json({ message: err.message });

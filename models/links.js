@@ -5,7 +5,7 @@ import targetValueSchema from './targetValue.js'
 const linkSchema = new mongoose.Schema({
     originalUrl: { type: String, required: true },
     clicks: [clickSchema],
-    targetParamName: String,
+    targetParamName: { type: String, default: "t" }, 
     targetValues: [targetValueSchema]
 })
 

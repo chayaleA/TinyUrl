@@ -7,6 +7,8 @@ router.get('/', LinksController.getLinks);
 
 router.get("/:id", LinksController.getById);
 
+router.get('/:id/clicks', LinksController.getLinkClicksBySource);
+
 router.post('/', LinksController.addLink);
 
 router.put('/:id', LinksController.updateLink);
