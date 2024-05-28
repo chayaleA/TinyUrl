@@ -15,7 +15,9 @@
     "@mui/icons-material": "^5.15.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "mongoose": "^8.2.0"
+    "ip6": "^0.2.10",
+    "mongoose": "^8.2.0",
+    "request-ip": "^3.3.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.5",

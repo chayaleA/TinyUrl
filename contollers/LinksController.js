@@ -1,6 +1,9 @@
 import linkModel from '../models/links.js'
+import Users from '../models/users.js';
+import requestIp from 'request-ip'; 
 
 const LinksController = {
+
     getLinks: async (req, res) => {
         try {
             const links = await linkModel.find();
@@ -12,29 +15,79 @@ const LinksController = {
     },
 
     getById: async (req, res) => {
+        const { id } = req.params;
+
         try {
-            const linkId = req.params.id;
-            const link = await linkModel.findById(linkId);
-            if (link) {
-                res.send(link);
-            } else {
-                res.status(404).send("Link not found");
+            const link = await linkModel.findById(id);
+            if (!link) {
+                return res.status(404).json({ message: 'Link not found' });
             }
-        } catch (error) {
-            console.error("Error retrieving link by ID:", error);
-            res.status(500).send("Internal Server Error");
+    
+            const targetParamName = link.targetParamName;
+            const targetParamValue = req.query[targetParamName];
+
+            const click = {
+                insertedAt: new Date(),
+                ipAddress: req.ip,
+                targetParamValue: targetParamValue || ''
+            };
+            link.clicks.push(click);
+            await link.save();
+    
+            res.redirect(link.originalUrl);
+        } catch (err) {
+            res.status(500).json({ message: err.message });
+        }
+    },
+
+    getLinkClicksBySource: async (req, res) => {
+        const { id } = req.params;
+    
+        try {
+            const link = await linkModel.findById(id);
+            if (!link) {
+                return res.status(404).json({ message: 'Link not found' });
+            }
+    
+            const clicks = link.clicks;
+            const clicksBySource = {};
+    
+            link.targetValues.forEach((source) => {
+                clicksBySource[source.name] = clicks.filter((click) => click.targetParamValue === source.value).length;
+            });
+    
+            res.status(200).json(clicksBySource);
+        } catch (err) {
+            res.status(500).json({ message: err.message });
         }
     },
 
     addLink: async (req, res) => {
+        const { userId, originalUrl, clicks, targetParamName, targetValues } = req.body;
+
         try {
-            const body = req.body;
-            const newLink = new linkModel(body);
+            const newLink = new linkModel({
+                originalUrl,
+                clicks: clicks || [],
+                targetParamName: targetParamName || '',
+                targetValues: targetValues || []
+            });
             await newLink.save();
-            res.status(200).json({ success: true });
-        } catch (error) {
-            console.error("Error adding user data:", error);
-            res.status(500).json({ error: "Internal Server Error" });
+    
+            const user = await Users.findById(userId);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            user.links.push(newLink._id);
+            await user.save();
+    
+            res.status(201).json({
+                message: 'Link created successfully',
+                shortUrl: `http://localhost:8787/links/${newLink._id}`
+            });
+        } catch (err) {
+            res.status(500).json({ message: err.message });
         }
     },
 

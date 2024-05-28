@@ -3,7 +3,7 @@ import clickSchema from './clicks.js';
 import targetValueSchema from './targetValue.js'
 
 const linkSchema = new mongoose.Schema({
-    originalUrl: String,
+    originalUrl: { type: String, required: true },
     clicks: [clickSchema],
     targetParamName: String,
     targetValues: [targetValueSchema]
